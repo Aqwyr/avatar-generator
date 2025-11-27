@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Генератор случайных аватаров</title>
+
+  <!-- React, ReactDOM и Babel -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .app {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    p {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    .avatar {
+      width: 200px;
+      height: 200px;
+      margin: 20px auto;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 6px solid #e0e0e0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .info {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel">
+  // Массив ссылок на аватары
+  const avatars = [
+    "avatars/1.jpg",
+    "avatars/2.jpg",
+    "avatars/3.jpg",
+    "avatars/4.jpg",
+    "avatars/5.jpg",
+    "avatars/6.jpg",
+  ];
+
+  function App() {
+    const [currentAvatar, setCurrentAvatar] = React.useState(avatars[0]);
+    const [count, setCount] = React.useState(() => {
+      return parseInt(localStorage.getItem('avatarCount') || '0');
+    });
+
+    const generateAvatar = () => {
+      const randomIndex = Math.floor(Math.random() * avatars.length);
+      setCurrentAvatar(avatars[randomIndex]);
+      const newCount = count + 1;
+      setCount(newCount);
+      localStorage.setItem('avatarCount', newCount);
+    };
+
+    React.useEffect(() => {
+      generateAvatar(); // первый случайный при загрузке
+    }, []);
+
+    return (
+      <div className="app">
+        <h1>Генератор случайных аватаров</h1>
+        <p>Нажми кнопку, чтобы получить нового случайного персонажа!</p>
+
+        <img src={currentAvatar} alt="Случайный аватар" className="avatar" />
+
+        <br /><br />
+        <button onClick={generateAvatar}>Новый аватар</button>
+
+        <div className="info">
+          Всего сгенерировано аватаров: <strong>{count}</strong>
+        </div>
+      </div>
+    );
+  }
+
+  // Количество генераций сохраняется в localStorage
+  const originalSetItem = localStorage.setItem;
+  localStorage.setItem = function(key, value) {
+    if (key === 'avatarCount') {
+      document.querySelector('.info strong').textContent = value;
+    }
+    originalSetItem.apply(this, arguments);
+  };
+
+  // При каждом новом аватаре увеличивается счётчик
+  const originalGenerate = App.prototype.generateAvatar;
+  const newGenerateAvatar = function() {
+    let count = parseInt(localStorage.getItem('avatarCount') || '0');
+    count++;
+    localStorage.setItem('avatarCount', count);
+  };
+  
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(<App/>);
+</script>
+
+</body>
+</html>
